@@ -8,8 +8,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from PIL import Image
 
+
+
 # cinemagraph読み込み
-im = Image.open("c4.gif")
+argvs = sys.argv
+argc = len(argvs)
+if(argc != 2):
+	quit()
+
+im = Image.open(argvs[1] + ".gif")
 
 try:
 	# 一枚ずつ処理
@@ -27,10 +34,16 @@ try:
 		ax = Axes3D(fig)
 
 		# ピクセル値を取り出してscatter
-		l = list(tmp.getdata())
-		l_uniq = list(set(l))
-		colors = np.array(l_uniq)
-		ax.scatter3D(colors[:, 0], colors[:, 1], colors[:, 2], color=colors/255.0, marker="o")
+		# l = list(tmp.getdata())
+		l = tmp.getcolors()
+		counts = [row[0] for row in l]
+		colors = [row[1] for row in l]
+		r = [row[0] for row in colors]
+		g = [row[1] for row in colors]
+		b = [row[2] for row in colors]
+
+		colors = [[c/255.0 for c in color] for color in colors]
+		ax.scatter3D(r, g, b, color=colors, marker="o", s=[count/10.0 for count in counts])
 
 		# ラベル
 		ax.set_xlabel("Red")
@@ -46,8 +59,8 @@ try:
 		ax.set_zlim(0, 255)
 
 		# 保存
-		plt.savefig("./c4/" + str(im.tell()) + ".gif")
-
+		plt.savefig("./" + argvs[1] + "/" + str(im.tell()) + ".gif")
+		
 		# 次のコマへ
 		im.seek(im.tell() + 1)
 except EOFError:
